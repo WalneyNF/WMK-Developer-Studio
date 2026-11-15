@@ -16,15 +16,13 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: wmk-windows-${{ github.ref }}
-  cancel-in-progress: true
-
+# Não cancelar builds longos quando novos commits chegam ao mesmo branch.
+# A compilação Rust inicial pode levar bastante tempo.
 jobs:
   windows-x64:
     name: Windows x64 - Instalador e Portátil
     runs-on: windows-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     env:
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: always
