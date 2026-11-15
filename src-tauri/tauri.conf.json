@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "OpenIDEA",
+  "productName": "WMK Developer Studio",
   "version": "0.1.45",
   "identifier": "ai.l0ng.openidea",
   "build": {
@@ -14,7 +14,7 @@
       {
         "label": "main",
         "create": false,
-        "title": "OpenIDEA",
+        "title": "WMK Developer Studio",
         "width": 1440,
         "height": 900,
         "minWidth": 400,
@@ -33,12 +33,18 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "category": "DeveloperTool",
-    "copyright": "Copyright © 2026 OpenIDEA contributors",
+    "copyright": "Copyright © 2026 Walney Moreira Klein (adaptações WMK); OpenIDEA contributors (base original)",
     "license": "Apache-2.0",
-    "shortDescription": "An open-source IDE inspired by IntelliJ IDEA",
-    "longDescription": "OpenIDEA is an open-source IDE inspired by IntelliJ IDEA. Not affiliated with JetBrains.",
+    "shortDescription": "WMK Developer Studio — IDE para programação, aplicações e jogos",
+    "longDescription": "WMK Developer Studio: fork da IDE OpenIDEA, com ferramentas de desenvolvimento, plugins, agentes ACP e MCP. Base OpenIDEA de l0ng-ai e colaboradores.",
     "macOS": {
       "entitlements": "./Entitlements.plist",
       "minimumSystemVersion": "13.0"
@@ -48,7 +54,9 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFCOUU0MUFFOUY4NzZCNkQKUldSdGE0ZWZya0dlRzNnRFJUR2loUVdNZ1BmamxkNzFoaWNPUTBsRmI0cjhxZFRqQURybkMwakEK",
-      "endpoints": ["https://github.com/l0ng-ai/openidea/releases/latest/download/latest.json"]
+      "endpoints": [
+        "https://github.com/WalneyNF/WMK-Developer-Studio/releases/latest/download/latest.json"
+      ]
     }
   }
 }
