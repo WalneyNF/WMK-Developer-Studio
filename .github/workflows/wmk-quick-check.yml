@@ -1,0 +1,51 @@
+name: WMK Quick Check
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig*.json"
+      - ".github/workflows/wmk-quick-check.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Uma verificação rápida substitui a anterior; não afeta as builds Windows manuais.
+concurrency:
+  group: wmk-quick-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend TypeScript / Vite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+      - name: Compilar frontend e validar WebKit
+        run: pnpm build
+      - name: Relatorio
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## WMK Quick Check"
+            echo "Commit: \`$GITHUB_SHA\`"
+            echo "Frontend finalizado. Consulte o status do job para validar o resultado."
+            echo "Esta verificação não compila Rust nem produz instalador."
+          } >> "$GITHUB_STEP_SUMMARY"
