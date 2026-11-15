@@ -148,3 +148,11 @@ opt-level = 3
 panic = "unwind"
 # Keep the symbol table: crash reports and logged backtraces name functions.
 strip = "debuginfo"
+
+# Perfil experimental para builds de teste que usem Cargo diretamente.
+# Tauri CLI v2 oferece --debug/--no-bundle; ele não seleciona este perfil automaticamente.
+[profile.wmk-test]
+inherits = "release"
+opt-level = 1
+lto = false
+codegen-units = 16
