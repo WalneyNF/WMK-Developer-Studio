@@ -1,0 +1,85 @@
+name: WMK Windows Test (EXE)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Build de teste independente da release otimizada.
+jobs:
+  windows-debug:
+    name: Windows x64 - executavel de testes
+    runs-on: windows-latest
+    timeout-minutes: 180
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Preparar Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.96.0"
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust debug
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: wmk-test-windows-x64-v1
+          cache-on-failure: true
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Compilar executavel de testes sem empacotamento NSIS
+        run: pnpm exec tauri build --ci --debug --no-bundle --target x86_64-pc-windows-msvc
+
+      - name: Criar pacote de testes e diagnosticos
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force "wmk-test-dist" | Out-Null
+          $exe = "target/x86_64-pc-windows-msvc/debug/openidea.exe"
+          if (!(Test-Path $exe)) {
+            throw "Executavel nao encontrado em $exe; verifique o mainBinaryName e a compilacao Tauri"
+          }
+          Copy-Item $exe "wmk-test-dist/WMK-Developer-Studio-Teste.exe"
+          @"
+          WMK Developer Studio - Build de Teste
+          Commit: ${{ github.sha }}
+          Build: Rust dev/debug, sem instalador NSIS.
+          Sistema: Windows x64.
+          Execute em um projeto descartavel; nao use como release de producao.
+          Requer dependencias de runtime usuais do Windows/Tauri, inclusive WebView2.
+          "@ | Set-Content "wmk-test-dist/LEIA-ME.txt" -Encoding UTF8
+          Get-ChildItem "wmk-test-dist" -File | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)" | Out-File ($_.FullName + ".sha256") -Encoding ascii
+          }
+          Compress-Archive -Path "wmk-test-dist/*" -DestinationPath "WMK-Developer-Studio-Teste-Windows-x64.zip" -CompressionLevel Optimal
+          "## WMK Windows Test" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- EXE debug compilado: $exe" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- Instalador NSIS: nao gerado nesta modalidade" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- Arquivo ZIP: WMK-Developer-Studio-Teste-Windows-x64.zip" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Publicar ZIP de teste
+        uses: actions/upload-artifact@v4
+        with:
+          name: WMK-Developer-Studio-Teste-Windows-x64
+          path: WMK-Developer-Studio-Teste-Windows-x64.zip
+          if-no-files-found: error
+          retention-days: 14
