@@ -84,6 +84,16 @@ jobs:
             "- $($_.Name) ($mb MB)" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           }
 
+      - name: Resumo do build (inclusive falhas)
+        if: always()
+        shell: pwsh
+        run: |
+          "## Diagnostico WMK" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- Workflow: ${{ github.workflow }}" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- Commit: ${{ github.sha }}" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- Resultado ate o resumo: ${{ job.status }}" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "- Caso falhe, abra a etapa vermelha e localize a primeira mensagem de erro." | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
       - name: Disponibilizar downloads
         uses: actions/upload-artifact@v4
         with:
