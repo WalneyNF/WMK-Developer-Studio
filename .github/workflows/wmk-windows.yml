@@ -1,17 +1,6 @@
-name: Compilar WMK Windows
+name: WMK Windows Release (manual)
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "src-tauri/**"
-      - "crates/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/wmk-windows.yml"
 
 permissions:
   contents: read
@@ -59,8 +48,13 @@ jobs:
       - name: Verificar frontend
         run: pnpm build
 
+      - name: Registrar inicio do build
+        shell: pwsh
+        run: |
+          "Release iniciada: $(Get-Date -Format o)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
       - name: Compilar instalador Tauri
-        run: pnpm exec tauri build --target x86_64-pc-windows-msvc --bundles nsis
+        run: pnpm exec tauri build --ci --target x86_64-pc-windows-msvc --bundles nsis
 
       - name: Empacotar instalador e versao portatil
         shell: pwsh
@@ -78,6 +72,16 @@ jobs:
           Get-ChildItem "wmk-dist" -File | ForEach-Object {
             $sha = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
             "$sha  $($_.Name)" | Out-File -FilePath ($_.FullName + ".sha256") -Encoding ascii
+          }
+
+      - name: Relatorio de artefatos
+        if: success()
+        shell: pwsh
+        run: |
+          "## WMK Windows Release" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          Get-ChildItem "wmk-dist" -File | ForEach-Object {
+            $mb = [math]::Round($_.Length / 1MB, 2)
+            "- $($_.Name) ($mb MB)" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           }
 
       - name: Disponibilizar downloads
