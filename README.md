@@ -1,79 +1,72 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="src-tauri/icons/source/openidea-wordmark-dark.svg">
-    <img src="src-tauri/icons/source/openidea-wordmark.svg" alt="OpenIDEA" height="56">
-  </picture>
-</p>
+# WMK Developer Studio
 
-<p align="center">
-  The IDE you know, rebuilt in Rust.
-</p>
+**IDE desktop para desenvolvimento de software, baseada no projeto open-source OpenIDEA.**
 
-<p align="center">
-  English · <a href="README.zh-CN.md">简体中文</a>
-</p>
+> Projeto em evolução. A presença de um módulo no código não garante que todas as funcionalidades estejam concluídas ou testadas no Windows.
 
-<p align="center">
-  <a href="https://github.com/l0ng-ai/openidea/releases/latest"><b>Download</b></a>
-  &nbsp;·&nbsp;
-  <a href="https://openidea.sh">Docs</a>
-  &nbsp;·&nbsp;
-  <a href="#benchmark">Benchmark</a>
-  &nbsp;·&nbsp;
-  <a href="#plugins">Plugins</a>
-  &nbsp;·&nbsp;
-  <a href="#community">Community</a>
-</p>
+**Desenvolvimento e personalização WMK:** Walney Moreira Klein — walneyk@hotmail.com  
+**Projeto original:** [OpenIDEA, de l0ng-ai e colaboradores](https://github.com/l0ng-ai/openidea)  
+**Licença:** [Apache 2.0](LICENSE). Consulte também [NOTICE](NOTICE) e [licenças de terceiros](THIRD_PARTY_LICENSES.md).
 
-https://github.com/user-attachments/assets/234dd54c-1255-4b3a-b35c-533d78d737c0
+## O que realmente existe no código
 
-OpenIDEA brings the IntelliJ IDEA way of working — its keymap, its tool windows,
-its search-everything habits — to a native app with a Rust core.
+- Editor com CodeMirror e suporte declarado a mais de 60 linguagens.
+- Integração LSP para recursos de inteligência de código; depuração via DAP.
+- Terminal, Git, execução de projetos, banco de dados e cliente HTTP.
+- **Agentes de IA via ACP (Agent Client Protocol):** suporte à conexão com agentes externos, como Claude Code, Codex e Gemini CLI. Instalação/autenticação e disponibilidade dos executáveis dependem do usuário.
+- **MCP:** servidor MCP local fornecido por `ide-mcp`, com transporte HTTP em `127.0.0.1` e ponte stdio; interface para configurar servidores MCP externos usados pelos agentes.
+- Sistema de plugins WebAssembly, com API ainda em preview.
+- Catálogo de tradução em português em `src/platform/locales/text/pt.json`. A cobertura precisa ser revisada.
 
-Editor, code insight, debugger, Git, terminal, database and HTTP clients,
-for 60+ languages. Builds for macOS, Windows and Linux.
+**Importante:** Groq e Ollama **não estão anunciados aqui como provedores nativos prontos**. É uma melhoria planejada e exigirá implementação e testes de integração. ACP e MCP não significam automaticamente integração direta com qualquer API de modelos.
 
-## Benchmark
+## Instalação — Windows
 
-Opening [freqtrade](https://github.com/freqtrade/freqtrade) (Python, ~770 files)
-with warm caches, median of 5 runs:
+Acesse [GitHub Actions](https://github.com/WalneyNF/WMK-Developer-Studio/actions/workflows/wmk-windows.yml), execute **Compilar WMK Windows** e baixe o ZIP gerado na seção *Artifacts* ao terminar com sucesso.
 
-|                             | OpenIDEA          | IntelliJ IDEA 2026.2.3 |
-| --------------------------- | ----------------- | ---------------------- |
-| Window with the project     | **0.9 s**         | 3.1 s                  |
-| Ready (CPU settled)         | **1.1 s**         | 13.2 s                 |
-| Memory (USS, all processes) | **169 MB**        | 2011 MB                |
-| CPU time until ready        | **2.4 s**         | 47.9 s                 |
-| Idle CPU                    | **4 %** of a core | 7 % of a core          |
-| Quit                        | **0.3 s**         | 5.9 s                  |
+O ZIP de artefato contém os instaladores produzidos pelo Tauri e uma versão portátil quando o build concluir. **Não há executável publicado até que uma execução termine com sucesso.** Para distribuição pública, publique o artefato em [Releases](https://github.com/WalneyNF/WMK-Developer-Studio/releases).
 
-A release build of OpenIDEA from `main` and IDEA with default settings and plugins, on
-Windows 11, 32-core AMD, 62 GB RAM.
-IDEA analyses Python more deeply, so "ready" doesn't mean the same work on
-both sides. Both are measured from the outside, the same way: see
-[`perf/compare`](perf/compare) to run it on your machine and projects.
+### Desenvolvedores
 
-## Plugins
+Pré-requisitos: Windows com MSVC/Build Tools, Rust conforme `Cargo.toml` (mínimo 1.96), Node.js >=22.18 e pnpm 11.
 
-Plugins add actions, completion, quick fixes, tool windows, custom editors,
-themes, file icons and languages. They run as sandboxed WebAssembly components;
-themes, icon themes and languages need no code at all.
+```powershell
+git clone https://github.com/WalneyNF/WMK-Developer-Studio.git
+cd WMK-Developer-Studio
+pnpm install --frozen-lockfile
+pnpm tauri dev
+```
 
-Install them from Settings › Plugins, or start your own with
-`openidea-plugin new` — see [Writing OpenIDEA plugins](https://openidea.sh/en/plugins) and
-the [official plugins](plugins/official). The plugin API is still a preview.
+Para compilar localmente: `pnpm exec tauri build`. Uma compilação fria do Rust consome muitos gigabytes de disco e pode ser demorada. Para computadores com pouco espaço, prefira o Actions.
 
-## Community
+## Identidade visual
 
-- [Discord](https://discord.gg/2Zy4yn7gP) — questions, feedback and release news.
-- WeChat group — scan to join:
+A identidade aprovada é a marca **WMK Developer Studio** em azul/ciano/roxo. A logo oficial deve ser mantida em `assets/brand/logo-oficial.png`; veja [orientações de identidade](assets/brand/README.md). A imagem original foi fornecida pelo responsável pelo fork. Não utilize imagens de terceiros sem permissão.
 
-  <img src=".github/assets/wechat-group.png" alt="WeChat group QR code" width="200">
+## Como funciona a IA
 
-- Contributing: see [CONTRIBUTING.md](CONTRIBUTING.md) and the [contributor docs](https://openidea.sh/en/contribute/setup).
+1. Abra um projeto confiável.
+2. Entre em **Agents / Coding Agents** e configure o executável do agente ACP escolhido.
+3. Autentique esse agente por seus próprios meios, caso solicitado.
+4. Em **External MCP Servers**, registre as ferramentas MCP que deseja disponibilizar ao agente.
+5. Revise as permissões antes de permitir alterações ou execução de comandos.
 
-## License
+Os agentes ACP e o servidor MCP são componentes distintos; não confunda o servidor MCP da IDE com uma chave de API de provedores LLM.
 
-[Apache 2.0](LICENSE). Bundled third-party assets are listed in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
+## Roadmap WMK
 
-<sub>Not affiliated with JetBrains. IntelliJ IDEA is a trademark of JetBrains s.r.o.</sub>
+- [ ] Confirmar build funcional da marca WMK no Windows.
+- [ ] Aplicar a arte oficial aos ícones do executável e instalador.
+- [ ] Auditar e completar a localização pt-BR.
+- [ ] Criar painel configurável de Groq/Ollama com armazenamento seguro de credenciais.
+- [ ] Perfis de projetos PHP, Python, JavaScript, Rust e Godot.
+- [ ] Gerador visual e assistido de projetos com execução de testes.
+- [ ] Empacotar releases verificadas e documentadas.
+
+## Créditos e termos
+
+Personalização WMK: **Walney Moreira Klein — walneyk@hotmail.com**.  
+Base original: **OpenIDEA**, desenvolvido por **l0ng-ai e colaboradores**.  
+Este fork não possui vínculo com a JetBrains. IntelliJ IDEA é marca registrada da JetBrains.
+
+Não remova o arquivo LICENSE, NOTICE ou THIRD_PARTY_LICENSES.md.
