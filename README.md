@@ -8,6 +8,10 @@
 **Projeto original:** [OpenIDEA, de l0ng-ai e colaboradores](https://github.com/l0ng-ai/openidea)  
 **Licença:** [Apache 2.0](LICENSE). Consulte também [NOTICE](NOTICE) e [licenças de terceiros](THIRD_PARTY_LICENSES.md).
 
+## Manual de agentes de IA
+
+**Novo:** [Manual completo de Codex, OpenCode, Groq, Ollama, ACP, MCP e revisão de código](manuais/manual-agentes-ia.html). Guia pt-BR com 12 módulos, configuração Windows, exemplos e exercícios práticos.
+
 ## Planejamento e etapas de testes
 
 Consulte o **[roadmap.html](roadmap.html)** para visualizar o planejamento completo e interativo (GameDev, IA, MCP, plugins, tradução e builds Windows). O checklist do HTML é local ao navegador e não altera automaticamente o GitHub.
