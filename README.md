@@ -45,6 +45,32 @@ A arte aprovada deve substituir os PNG/ICO no diretório `src-tauri/icons/`. At�
 
 **Importante:** Groq e Ollama **não estão anunciados aqui como provedores nativos prontos**. É uma melhoria planejada e exigirá implementação e testes de integração. ACP e MCP não significam automaticamente integração direta com qualquer API de modelos.
 
+## Compilação WMK — três modos
+
+Para evitar esperar por uma compilação otimizada a cada alteração, agora temos três workflows diferentes:
+
+| Modo | Workflow | Quando usar | Saída |
+| --- | --- | --- | --- |
+| **Quick Check** | [WMK Quick Check](.github/workflows/wmk-quick-check.yml) | Automaticamente para alterações de frontend, ou manualmente | Verificação frontend, **sem EXE** |
+| **Windows Test (EXE)** | [WMK Windows Test](.github/workflows/wmk-windows-test.yml) | Manualmente para validar a IDE em PC Windows | ZIP contendo **EXE debug**, sem NSIS |
+| **Windows Release** | [WMK Windows Release](.github/workflows/wmk-windows.yml) | Manualmente quando a versão estiver pronta | Instalador NSIS e executável release, com hashes |
+
+Para executar uma build manual: abra **Actions → workflow desejado → Run workflow → main**. Aguarde o status `success` e procure a seção **Artifacts**. O download depende da conclusão das etapas de compilação e upload; arquivos não são publicados quando o job falha.
+
+**Por que há três modos?** O release original usa `opt-level=3`, `codegen-units=1` e Thin LTO, que tornam a compilação inicial mais pesada. O Windows Test usa `tauri build --debug --no-bundle`, suportado oficialmente pelo Tauri 2, para pular a geração do instalador e reduzir as otimizações. Ainda exige compilar dependências Rust, portanto **a primeira compilação de teste também pode demorar**.
+
+O workspace possui ainda um perfil experimental Cargo `wmk-test` (menos otimizações e sem LTO), disponível para testes diretos com Cargo, **mas os workflows usam os perfis padrão do Tauri**; não presuma que `wmk-test` esteja ativo durante `tauri build`.
+
+**Diagnóstico de falhas:**
+1. Verifique se o job concluiu como `failure`, `cancelled` ou `success`.
+2. Abra a etapa vermelha e copie as últimas mensagens de erro.
+3. Se falhou antes de Tauri, identifique falha em `pnpm install` ou `pnpm build`.
+4. Se falhou no Rust/Tauri, identifique o **primeiro** `error:` relevante antes das mensagens finais.
+5. Se o EXE compilou, mas o instalador não, investigue a etapa de empacotamento NSIS separadamente.
+6. Guarde o SHA-256 para comparar os artefatos. O relatório do Actions registra os arquivos gerados.
+
+**Limitações:** o workflow de testes não inclui instalador e não garante execução em todos os PCs; recursos como WebView2 e runtime do Visual C++ podem ser necessários. Um build verde comprova compilação/empacotamento, não testes funcionais da IDE. O workflow de CI original do OpenIDEA permanece existente e poderá executar verificações adicionais em paralelo.
+
 ## Instalação — Windows
 
 Acesse [GitHub Actions](https://github.com/WalneyNF/WMK-Developer-Studio/actions/workflows/wmk-windows.yml), execute **Compilar WMK Windows** e baixe o ZIP gerado na seção *Artifacts* ao terminar com sucesso.
