@@ -8,6 +8,19 @@
 **Projeto original:** [OpenIDEA, de l0ng-ai e colaboradores](https://github.com/l0ng-ai/openidea)  
 **Licença:** [Apache 2.0](LICENSE). Consulte também [NOTICE](NOTICE) e [licenças de terceiros](THIRD_PARTY_LICENSES.md).
 
+## Ações de IA no editor — primeira implementação WMK
+
+A base agora registra quatro ações no menu do editor e na busca de ações:
+
+- **WMK IA: Explicar código** — análise em português, somente leitura.
+- **WMK IA: Revisar código** — bugs, segurança, desempenho e recomendações, somente leitura.
+- **WMK IA: Propor correção** — prepara uma solicitação de alteração com exigência de diff e testes.
+- **WMK IA: Gerar testes** — prepara uma solicitação de testes cobrindo casos normais e extremos.
+
+**Como usar:** abra um projeto confiável, selecione um trecho no editor ou mantenha apenas o arquivo aberto, clique com o botão direito e escolha uma ação **WMK IA**. A IDE abre o rascunho de uma tarefa do agente, adicionando a referência ao arquivo e às linhas selecionadas quando possível. Revise o pedido, selecione o agente configurado e só então inicie a tarefa.
+
+**Segurança e estado:** as ações **não executam automaticamente** o agente, comandos ou alterações. A execução posterior segue as permissões e configurações do sistema ACP, e ainda não foi validada no build Windows WMK. Para correções, prefira um projeto de teste e isolamento por worktree. O roadmap completo registra a futura camada WMK Safe Changes, checkpoints e revisão por múltiplos agentes.
+
 ## Manual de agentes de IA
 
 **Novo:** [Manual completo de Codex, OpenCode, Groq, Ollama, ACP, MCP e revisão de código](manuais/manual-agentes-ia.html). Guia pt-BR com 12 módulos, configuração Windows, exemplos e exercícios práticos.
