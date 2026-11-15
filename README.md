@@ -8,6 +8,14 @@
 **Projeto original:** [OpenIDEA, de l0ng-ai e colaboradores](https://github.com/l0ng-ai/openidea)  
 **Licença:** [Apache 2.0](LICENSE). Consulte também [NOTICE](NOTICE) e [licenças de terceiros](THIRD_PARTY_LICENSES.md).
 
+## Planejamento e etapas de testes
+
+Consulte o **[roadmap.html](roadmap.html)** para visualizar o planejamento completo e interativo (GameDev, IA, MCP, plugins, tradução e builds Windows). O checklist do HTML é local ao navegador e não altera automaticamente o GitHub.
+
+**Versão de testes Windows:** o workflow já está configurado, mas somente o log de uma execução concluída com sucesso comprova que o executável foi gerado e que o empacotamento funcionou. O nome da aplicação e da janela foi ajustado para WMK Developer Studio; o nome interno de alguns binários continua OpenIDEA nesta fase, para não quebrar integrações existentes.
+
+A arte aprovada deve substituir os PNG/ICO no diretório `src-tauri/icons/`. Até essa substituição, o build ainda poderá mostrar ícones originais. A atualização automática não estará disponível antes de publicarmos nosso próprio manifesto e assinatura.
+
 ## O que realmente existe no código
 
 - Editor com CodeMirror e suporte declarado a mais de 60 linguagens.
@@ -55,7 +63,7 @@ Os agentes ACP e o servidor MCP são componentes distintos; não confunda o serv
 
 ## Roadmap WMK
 
-- [ ] Confirmar build funcional da marca WMK no Windows.
+- [ ] Confirmar build funcional da marca WMK no Windows (acompanhar [GitHub Actions](https://github.com/WalneyNF/WMK-Developer-Studio/actions/workflows/wmk-windows.yml)).
 - [ ] Aplicar a arte oficial aos ícones do executável e instalador.
 - [ ] Auditar e completar a localização pt-BR.
 - [ ] Criar painel configurável de Groq/Ollama com armazenamento seguro de credenciais.
