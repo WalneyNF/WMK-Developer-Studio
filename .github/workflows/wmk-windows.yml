@@ -1,0 +1,91 @@
+name: Compilar WMK Windows
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "src-tauri/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/wmk-windows.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wmk-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x64:
+    name: Windows x64 - Instalador e Portátil
+    runs-on: windows-latest
+    timeout-minutes: 180
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Configurar Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.96.0"
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: wmk-windows-x64-v1
+          cache-on-failure: true
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificar frontend
+        run: pnpm build
+
+      - name: Compilar instalador Tauri
+        run: pnpm exec tauri build --target x86_64-pc-windows-msvc --bundles nsis
+
+      - name: Empacotar instalador e versao portatil
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path "wmk-dist" | Out-Null
+          $exe = "target/x86_64-pc-windows-msvc/release/openidea.exe"
+          if (!(Test-Path $exe)) { throw "Executavel nao encontrado: $exe" }
+          Copy-Item $exe "wmk-dist/WMK-Developer-Studio.exe"
+          $installers = Get-ChildItem "target/x86_64-pc-windows-msvc/release/bundle/nsis" -Filter "*.exe" -ErrorAction SilentlyContinue
+          if (!$installers) { throw "Instalador NSIS nao gerado" }
+          foreach ($i in $installers) {
+            Copy-Item $i.FullName ("wmk-dist/WMK-Developer-Studio-Setup-" + $i.Name)
+          }
+          Get-ChildItem "wmk-dist" -File | ForEach-Object {
+            $sha = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$sha  $($_.Name)" | Out-File -FilePath ($_.FullName + ".sha256") -Encoding ascii
+          }
+
+      - name: Disponibilizar downloads
+        uses: actions/upload-artifact@v4
+        with:
+          name: WMK-Developer-Studio-Windows-x64
+          path: wmk-dist/*
+          if-no-files-found: error
+          retention-days: 30
