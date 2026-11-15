@@ -4,6 +4,7 @@
  * editor tab (conversation + changed files), and New Task is an editor page.
  */
 import { createElement } from "react";
+import { activeEditor } from "@/editor/api";
 import { registerActions } from "@/platform/actions";
 import { useProject } from "@/platform/project";
 import { executeAction } from "@/platform/actions";
@@ -52,6 +53,48 @@ import {
 import { TaskStatusMark } from "./TaskStatusMark";
 import { taskActions, useAgentsHeaderMenu } from "./taskActions";
 import { replyActions } from "./replyActions";
+
+
+/**
+ * WMK Code Actions: explicit, reviewable draft requests.
+ * Nothing is sent to a provider or written to disk until the user starts the task.
+ * Existing agent permissions, diff review and worktree settings remain in force.
+ */
+const WMK_CODE_ACTIONS = [
+  {
+    id: "wmk.ai.explain",
+    title: "WMK IA: Explicar código",
+    prompt: "Explique o código referenciado em português brasileiro. Descreva finalidade, fluxo, dependências, possíveis riscos e exemplos de uso. SOMENTE LEITURA: não modifique arquivos e não execute comandos.",
+  },
+  {
+    id: "wmk.ai.review",
+    title: "WMK IA: Revisar código",
+    prompt: "Faça uma revisão técnica do código referenciado em português brasileiro. Identifique bugs, vulnerabilidades, desempenho, legibilidade e testes ausentes. Informe arquivo, linha, gravidade e evidências. SOMENTE LEITURA: não altere nenhum arquivo e não execute comandos.",
+  },
+  {
+    id: "wmk.ai.fix",
+    title: "WMK IA: Propor correção",
+    prompt: "Analise o código referenciado, identifique o problema e explique um plano antes de modificar. Proponha a menor correção segura, apresente o diff e os testes executados. Não altere arquivos fora do escopo, não instale dependências e não execute comandos destrutivos sem autorização. Selecione isolamento em worktree quando disponível.",
+  },
+  {
+    id: "wmk.ai.tests",
+    title: "WMK IA: Gerar testes",
+    prompt: "Analise o código referenciado e proponha testes automatizados de casos comuns, extremos e erros. Explique o plano antes de editar. Preserve a API pública e não adicione dependências ou execute comandos sem autorização. Apresente diff e resultados reais de testes; nunca invente execução.",
+  },
+] as const;
+
+function openWmkCodeAction(prompt: string) {
+  const handle = activeEditor();
+  const project = useProject.getState().project;
+  const path = handle?.ctx.path;
+  const valid = path && project?.root && !isVirtualUri(path) && path.startsWith(project.root + "/");
+  const selection = handle?.view.state.selection.main;
+  const lineRange = valid && selection && !selection.empty
+    ? `Linhas selecionadas: ${handle!.view.state.doc.lineAt(selection.from).number}–${handle!.view.state.doc.lineAt(Math.max(selection.from, selection.to - 1)).number}.`
+    : "Considere o arquivo inteiro como contexto inicial.";
+  openHome(`${prompt}\n\n${lineRange}\nRevise a tarefa antes de iniciá-la.`);
+  if (valid) sendPaths([path]);
+}
 
 /** Settings › Agents › Coding Agents and Settings › Agents › External MCP Servers (also used by the Settings window). */
 export function activateSettingsPages(): () => void {
@@ -206,7 +249,26 @@ export function activate(): () => void {
           ? [{ kind: "action", action: "agents.sendToAgent", arg: menu === "projectView" ? paths : undefined }]
           : [],
     }),
+    registerMenuGroup({
+      id: "wmk.ai.codeActions",
+      menus: ["editor"],
+      order: 81,
+      items: (_menu, { paths }) =>
+        paths.length && !paths.some(isVirtualUri)
+          ? WMK_CODE_ACTIONS.map((action) => ({ kind: "action" as const, action: action.id }))
+          : [],
+    }),
     registerActions([
+      ...WMK_CODE_ACTIONS.map((action) => ({
+        id: action.id,
+        title: action.title,
+        description: "Prepara uma tarefa de IA com contexto do editor; não a executa automaticamente.",
+        category: "WMK IA",
+        icon: "toolwindow-agents" as const,
+        when: "projectOpen",
+        keywords: ["wmk", "ia", "explicar", "revisar", "corrigir", "testes"],
+        run: () => openWmkCodeAction(action.prompt),
+      })),
       ...taskActions,
       ...replyActions,
       {
